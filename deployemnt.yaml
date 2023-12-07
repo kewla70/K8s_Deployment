@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tcm-web-dev
+  namespace: tcm-dev
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  selector:
+    matchLabels:
+      app: tcm-web-dev
+  template:
+    metadata:
+      labels:
+        app: tcm-web-dev
+    spec:
+      imagePullSecrets:
+        - name: gcr-sc-dev
+      nodeSelector:
+        kubernetes.io/os: windows
+      containers:
+        - name: tcm-web-dev
+          image: gcr.io/us-gcp-ame-its-e3748-npd-1/tcm-web-dev:v1.0
+          # resources:
+          #   limits:
+          #     cpu: 2
+          #     ephemeral-storage: 10Gi
+          #     memory: 6Gi
+          #   requests:
+          #     cpu: 1
+          #     ephemeral-storage: 6Gi
+          #     memory: 3Gi
+          readinessProbe:
+            httpGet:
+              path: /index.html
+              port: 80
+            initialDelaySeconds: 20
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /index.html
+              port: 80
+            initialDelaySeconds: 20
+            periodSeconds: 5
+          ports:
+            - containerPort: 80
